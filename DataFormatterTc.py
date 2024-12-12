@@ -1,0 +1,108 @@
+from pymatgen.core import Composition
+
+mat_id=[] #list list of mat_id's
+formula=[] #list of the chemical formulas
+Tc=[] #list of the SC Tc's
+D=[] # ist of the ductability values
+C=[] #list of the atomic fractions
+C1=[] #list of the weight fractions
+E=[] #list of elements
+N=0 #counter
+
+f = open("elementslist","r")
+
+lines = f.readlines()
+
+for line in lines:
+    line=line.strip(" \n")
+    E.append(line)
+    
+g = open("gil.csv","r")
+
+lines = g.readlines()
+for i in range(1,len(lines)):
+	line=lines[i]
+	line=line.strip("\n")
+	L=line.split(",")
+	mat_id.append(int(L[0]))
+	formula.append(L[1])
+	Tc.append(float(L[2]))
+	D.append(float(L[3]))
+for i in formula:
+	comp=Composition(i)
+	CC=[]
+	CC1=[]
+	for j in E:
+		CC.append(comp.get_atomic_fraction(j))
+		CC1.append(comp.get_wt_fraction(j))
+	C.append(CC)
+	C1.append(CC1)
+
+Co = open("compfractionsatom","w") #list with the atomic fractions for each compound
+Co1 = open("compfractionsweight","w") #list with the wt fractions for each compound
+Co2 = open("Ecomps","w") #list of each compound with each element
+Co3 = open("Ecompsindex","w") #list of each compound index with each element
+TcV = open("TcValues","w") #list of Tc values for each element
+for i in range(0,len(C)):
+	for j in range(0,len(E)):
+		Co.write(str(C[i][j])+",")
+		Co1.write(str(C1[i][j])+",")
+	Co.write("\n")
+	Co1.write("\n")
+
+Co.close()
+Co1.close()
+	
+for i in range(0,len(E)):
+	for j in range(0,len(C)):
+		if C[j][i] != 0.0:
+			Co2.write(str(formula[j])+",")
+			Co3.write(str(j)+",")
+			TcV.write(str(Tc[j])+",")		
+	Co2.write("\n")
+	Co3.write("\n")
+	TcV.write("\n")
+	
+Co2.close()
+Co3.close()
+TcV.close()
+	
+	
+TcVavg = open("TcValuesavg","w") #list of avg Tc values for each element
+TcVavgV=0
+
+TcVavgatomwv = open("TcValuesavgatomwv","w") #list of avg Tc values for each element
+TcVavgVatomwv=0
+
+TcVavgweightwv = open("TcValuesavgweightwv","w") #list of avg Tc values for each element
+TcVavgVweightwv=0
+	
+
+for i in range(0,len(E)):
+	for j in range(0,len(C)):
+		if C[j][i] != 0.0:
+			TcVavgV=TcVavgV+Tc[j]
+			TcVavgVatomwv=TcVavgVatomwv+(Tc[j]*C[j][i])
+			TcVavgVweightwv=TcVavgVweightwv+(Tc[j]*C1[j][i])
+			N=N+1
+	if N == 0:
+		TcVavg.write("\n")
+		TcVavgatomwv.write("\n")
+		TcVavgweightwv.write("\n")
+	
+	if N != 0:		
+		TcVavgV=TcVavgV/N
+		TcVavgVatomwv=TcVavgVatomwv/N
+		TcVavgVweightwv=TcVavgVweightwv/N
+		
+		TcVavg.write(str(TcVavgV)+"\n")
+		TcVavgatomwv.write(str(TcVavgVatomwv)+"\n")
+		TcVavgweightwv.write(str(TcVavgVweightwv)+"\n")
+		TcVavgV=0
+		TcVavgVatomwv=0
+		TcVavgVweightwv=0
+		N=0
+		
+TcVavg.close()
+TcVavgatomwv.close()
+TcVavgweightwv.close()
